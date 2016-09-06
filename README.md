@@ -27,6 +27,18 @@ go get github.com/xiam/arpfox
 arpfox -h
 ```
 
+## Running
+
+Depending on your OS, you may require root privileges to run this command:
+
+```
+arpfox -i wlan0 -t 10.0.0.25 10.0.0.1
+2016/09/05 20:06:12 wlan0: You don't have permission to capture on that device ((cannot open device) /dev/bpf: Permission denied)
+
+sudo arpfox -i wlan0 -t 10.0.0.25 10.0.0.1
+...
+```
+
 ## A practical example
 
 Alice is a security researcher, and she's going to redirect and watch traffic
