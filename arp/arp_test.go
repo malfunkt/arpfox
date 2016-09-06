@@ -5,7 +5,7 @@ import (
 )
 
 func TestArp(t *testing.T) {
-	addr, err := Lookup("10.0.0.66")
+	addr, err := Lookup("10.0.0.1")
 	if err != nil {
 		t.Fatal(err)
 	}

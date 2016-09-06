@@ -14,6 +14,19 @@ eavesdrop communications on a LAN.
 The machine that receives traffic can record, censor, alter or selectively drop
 network packets that pass through it.
 
+## Building
+
+Requisites:
+
+```
+sudo dnf install -y libpcap-devel
+```
+
+```
+go get github.com/xiam/arpfox
+arpfox -h
+```
+
 ## A practical example
 
 Alice is a security researcher, and she's going to redirect and watch traffic

@@ -18,12 +18,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/*
-07:14:23.891972 ARP, Reply 10.0.0.24 is-at 18:a6:f7:1b:8e:7f, length 28
-07:14:33.887364 ARP, Reply 10.0.0.24 is-at 18:a6:f7:1b:8e:7f, length 28
-07:14:43.891095 ARP, Reply 10.0.0.24 is-at 18:a6:f7:1b:8e:7f, length 28
-*/
-
 package main
 
 import (
@@ -150,7 +144,7 @@ func main() {
 		log.Fatalf("Unable to lookup hw address for %s: %v", hostIP, err)
 	}
 
-	fakeSrc := arp.ARPAddress{
+	fakeSrc := arp.Address{
 		IP:           hostIP,
 		HardwareAddr: iface.HardwareAddr,
 	}
@@ -162,7 +156,7 @@ func main() {
 	os.Exit(0)
 }
 
-func cleanUpAndReARP(handler *pcap.Handle, targetAddrs []net.IP, src *arp.ARPAddress) chan struct{} {
+func cleanUpAndReARP(handler *pcap.Handle, targetAddrs []net.IP, src *arp.Address) chan struct{} {
 	log.Printf("Cleaning up and re-ARPing targets...")
 
 	stopReARPing := make(chan struct{})
@@ -175,7 +169,7 @@ func cleanUpAndReARP(handler *pcap.Handle, targetAddrs []net.IP, src *arp.ARPAdd
 	return writeARP(handler, stopReARPing, targetAddrs, src, 500*time.Millisecond)
 }
 
-func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, src *arp.ARPAddress, waitInterval time.Duration) chan struct{} {
+func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, src *arp.Address, waitInterval time.Duration) chan struct{} {
 	stoppedWriting := make(chan struct{})
 	go func(stoppedWriting chan struct{}) {
 		t := time.NewTicker(waitInterval)
@@ -191,7 +185,7 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 						log.Printf("Could not retrieve %v's MAC address: %v", ip, err)
 						continue
 					}
-					dst := &arp.ARPAddress{
+					dst := &arp.Address{
 						IP:           ip,
 						HardwareAddr: arpAddr.HardwareAddr,
 					}
