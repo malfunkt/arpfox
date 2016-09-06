@@ -44,18 +44,18 @@ func List() map[string]net.HardwareAddr {
 	return table
 }
 
-// ARPAddress represents an ARP address.
-type ARPAddress struct {
+// Address represents an ARP address.
+type Address struct {
 	IP           net.IP
 	HardwareAddr net.HardwareAddr
 	Interface    net.Interface
 }
 
-// Lookup returns the ARPAddress given an IP, if the IP is not found within the
+// Lookup returns the Address given an IP, if the IP is not found within the
 // table, a lookup is attempted.
-func Lookup(ip string) (*ARPAddress, error) {
+func Lookup(ip string) (*Address, error) {
 	if hwaddr, ok := table[ip]; ok {
-		return &ARPAddress{
+		return &Address{
 			IP:           net.ParseIP(ip),
 			HardwareAddr: hwaddr,
 		}, nil
@@ -64,7 +64,7 @@ func Lookup(ip string) (*ARPAddress, error) {
 }
 
 // NewARPRequest creates a bew ARP packet of type "request.
-func NewARPRequest(src *ARPAddress, dst *ARPAddress) ([]byte, error) {
+func NewARPRequest(src *Address, dst *Address) ([]byte, error) {
 	ether, arp, err := buildPacket(src, dst)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func NewARPRequest(src *ARPAddress, dst *ARPAddress) ([]byte, error) {
 }
 
 // NewARPReply creates a new ARP packet of type "reply".
-func NewARPReply(src *ARPAddress, dst *ARPAddress) ([]byte, error) {
+func NewARPReply(src *Address, dst *Address) ([]byte, error) {
 	ether, arp, err := buildPacket(src, dst)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func NewARPReply(src *ARPAddress, dst *ARPAddress) ([]byte, error) {
 
 // buildPacket creates an template ARP packet with the given source and
 // destination.
-func buildPacket(src *ARPAddress, dst *ARPAddress) (layers.Ethernet, layers.ARP, error) {
+func buildPacket(src *Address, dst *Address) (layers.Ethernet, layers.ARP, error) {
 	ether := layers.Ethernet{
 		EthernetType: layers.EthernetTypeARP,
 

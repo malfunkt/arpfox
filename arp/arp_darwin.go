@@ -37,7 +37,7 @@ func hexToInt(h string) uint8 {
 	return uint8(v)
 }
 
-func doARPLookup(ip string) (*ARPAddress, error) {
+func doARPLookup(ip string) (*Address, error) {
 	ping := exec.Command("ping", "-c1", "-t1", ip)
 	ping.Run() // TODO: manually inject arp who has packet.
 	ping.Wait()
@@ -67,7 +67,7 @@ func doARPLookup(ip string) (*ARPAddress, error) {
 			return nil, fmt.Errorf("InterfaceByName: %v", err)
 		}
 
-		localAddr := ARPAddress{
+		localAddr := Address{
 			IP:           ipAddr,
 			HardwareAddr: macAddr,
 			Interface:    *iface,
