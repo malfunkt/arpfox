@@ -2,12 +2,10 @@ package main
 
 import (
 	"encoding/binary"
-	"log"
 	"net"
 )
 
 func ipRange(lower, upper net.IP) chan net.IP {
-	log.Printf("%s - %s", lower, upper)
 	ipchan := make(chan net.IP, 1)
 
 	rangeMask := net.IP([]byte{
@@ -65,7 +63,6 @@ func ipRange(lower, upper net.IP) chan net.IP {
 func expandIPRange(c chan net.IP) []net.IP {
 	ips := []net.IP{}
 	for ip := range c {
-		log.Printf("got ip %s", ip)
 		ips = append(ips, ip)
 	}
 	return ips
