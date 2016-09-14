@@ -36,7 +36,7 @@ import (
 	"github.com/google/gopacket/pcap"
 	"github.com/xiam/arpfox/arp"
 
-	"github.com/ArturoVM/targetparser"
+	"github.com/xiam/arpfox/targetparser"
 )
 
 var (
