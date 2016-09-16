@@ -1,3 +1,4 @@
+// Copyright (c) 2016 José Nieto, https://menteslibres.net/xiam
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,6 +35,8 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"github.com/xiam/arpfox/arp"
+
+	"github.com/xiam/arpfox/targetparser"
 )
 
 var (
@@ -102,11 +105,11 @@ func main() {
 
 	var targetAddrs []net.IP
 	if *flagTarget != "" {
-		ipChan, err := parseIPArgument(*flagTarget)
+		addrRange, err := targetparser.Parse(*flagTarget)
 		if err != nil {
 			log.Fatal("Wrong format for target.")
 		}
-		targetAddrs = expandIPRange(ipChan)
+		targetAddrs = expandIPRange(ipRange(addrRange.Min, addrRange.Max))
 		if len(targetAddrs) == 0 {
 			log.Fatalf("No valid targets given.")
 		}
