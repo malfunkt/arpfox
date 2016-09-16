@@ -50,8 +50,8 @@ target:     address '/' NUM
                     maxBytes = maxBytes[len(maxBytes)-4:]
                     max := net.IP(maxBytes)
                     $$ = AddressRange {
-                        Min: min,
-                        Max: max,
+                        Min: min.To4(),
+                        Max: max.To4(),
                     }
                     iplex.(*ipLex).output = $$
                 }
@@ -64,8 +64,8 @@ target:     address '/' NUM
 address:    term '.' term '.' term '.' term
                 {
                     $$ = AddressRange {
-                        Min: net.IPv4($1.min, $3.min, $5.min, $7.min),
-                        Max: net.IPv4($1.max, $3.max, $5.max, $7.max),
+                        Min: net.IPv4($1.min, $3.min, $5.min, $7.min).To4(),
+                        Max: net.IPv4($1.max, $3.max, $5.max, $7.max).To4(),
                     }
                 }
 

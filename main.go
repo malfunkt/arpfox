@@ -109,7 +109,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Wrong format for target.")
 		}
-		targetAddrs = expandIPRange(ipRange(addrRange.Min, addrRange.Max))
+		targetAddrs = targetparser.Expand(targetparser.Range(addrRange))
 		if len(targetAddrs) == 0 {
 			log.Fatalf("No valid targets given.")
 		}
