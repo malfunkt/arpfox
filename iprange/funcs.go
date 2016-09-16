@@ -1,4 +1,4 @@
-package targetparser
+package iprange
 
 import (
 	"encoding/binary"
@@ -68,6 +68,6 @@ func Expand(c chan net.IP) []net.IP {
 	return ips
 }
 
-func Range(addressRange *AddressRange) chan net.IP {
+func New(addressRange *Address) chan net.IP {
 	return streamRange(addressRange.Min, addressRange.Max)
 }

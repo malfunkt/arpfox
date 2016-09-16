@@ -36,7 +36,7 @@ import (
 	"github.com/google/gopacket/pcap"
 	"github.com/xiam/arpfox/arp"
 
-	"github.com/xiam/arpfox/targetparser"
+	"github.com/xiam/arpfox/iprange"
 )
 
 var (
@@ -105,11 +105,11 @@ func main() {
 
 	var targetAddrs []net.IP
 	if *flagTarget != "" {
-		addrRange, err := targetparser.Parse(*flagTarget)
+		addrRange, err := iprange.Parse(*flagTarget)
 		if err != nil {
 			log.Fatal("Wrong format for target.")
 		}
-		targetAddrs = targetparser.Expand(targetparser.Range(addrRange))
+		targetAddrs = iprange.Expand(iprange.New(addrRange))
 		if len(targetAddrs) == 0 {
 			log.Fatalf("No valid targets given.")
 		}

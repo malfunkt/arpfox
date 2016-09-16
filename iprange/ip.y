@@ -1,6 +1,6 @@
 %{
 
-package targetparser
+package iprange
 
 import (
     "bytes"
@@ -13,7 +13,7 @@ import (
     "github.com/pkg/errors"
 )
 
-type AddressRange struct {
+type Address struct {
     Min net.IP
     Max net.IP
 }
@@ -28,7 +28,7 @@ type octetRange struct {
 %union {
     num         byte
     octRange    octetRange
-    addrRange   AddressRange
+    addrRange   Address
 }
 
 %token  <num> NUM
@@ -49,7 +49,7 @@ target:     address '/' NUM
                     binary.BigEndian.PutUint32(maxBytes, maxInt)
                     maxBytes = maxBytes[len(maxBytes)-4:]
                     max := net.IP(maxBytes)
-                    $$ = AddressRange {
+                    $$ = Address {
                         Min: min.To4(),
                         Max: max.To4(),
                     }
@@ -63,7 +63,7 @@ target:     address '/' NUM
 
 address:    term '.' term '.' term '.' term
                 {
-                    $$ = AddressRange {
+                    $$ = Address {
                         Min: net.IPv4($1.min, $3.min, $5.min, $7.min).To4(),
                         Max: net.IPv4($1.max, $3.max, $5.max, $7.max).To4(),
                     }
@@ -82,7 +82,7 @@ const eof = 0
 type ipLex struct {
     line    []byte
     peek    rune
-    output  AddressRange
+    output  Address
     err     error
 }
 
@@ -153,7 +153,7 @@ func (ip *ipLex) Error(s string) {
     ip.err = errors.New(s)
 }
 
-func Parse(in string) (*AddressRange, error) {
+func Parse(in string) (*Address, error) {
     lex := &ipLex{line: []byte(in)}
     errCode := ipParse(lex)
     if errCode != 0 || lex.err != nil {
