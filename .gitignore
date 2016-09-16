@@ -1,2 +1,6 @@
-*.swp
+*.sw?
 y.*
+vendor
+arpfox
+bin
+*.exe

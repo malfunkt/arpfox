@@ -1,0 +1,55 @@
+BUILD_PATH          ?= github.com/xiam/arpfox
+BUILD_OUTPUT_DIR    ?= bin
+DOCKER_CONTAINER    ?= arpfox-builder
+BUILD_FLAGS					?= -v
+
+GH_ACCESS_TOKEN     ?=
+GH_RELEASE_MESSAGE  ?= Latest release.
+
+all: build
+
+generate:
+	cd iprange && go generate
+
+build: generate vendor-sync
+	go build -o arpfox github.com/xiam/arpfox
+
+docker-build: generate vendor-sync docker-builder clean
+	mkdir -p $(BUILD_OUTPUT_DIR) && \
+	docker run \
+		-v $$PWD:/app/src/$(BUILD_PATH) \
+		-e CGO_CFLAGS="-I/usr/i686-w64-mingw32/sys-root/mingw/include/wpcap/" \
+		-e CC=/usr/bin/x86_64-w64-mingw32-gcc \
+		-e CGO_ENABLED=1 -e GOOS=windows -e GOARCH=amd64 \
+		$(DOCKER_CONTAINER) go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_windows_amd64.exe $(BUILD_PATH) && \
+	docker run \
+		-v $$PWD:/app/src/$(BUILD_PATH) \
+		-e CGO_CFLAGS="-I/usr/i686-w64-mingw32/sys-root/mingw/include/wpcap/" \
+		-e CC=/usr/bin/i686-w64-mingw32-gcc \
+		-e CGO_ENABLED=1 -e GOOS=windows -e GOARCH=386 \
+		$(DOCKER_CONTAINER) go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_windows_386.exe $(BUILD_PATH) && \
+	docker run \
+		-v $$PWD:/app/src/$(BUILD_PATH) \
+		-e CGO_ENABLED=1 -e GOOS=linux -e GOARCH=amd64 \
+		$(DOCKER_CONTAINER) go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_linux_amd64 $(BUILD_PATH) && \
+	docker run \
+		-v $$PWD:/app/src/$(BUILD_PATH) \
+		-e CGO_ENABLED=1 -e GOOS=linux -e GOARCH=386 \
+		$(DOCKER_CONTAINER) go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_linux_386 $(BUILD_PATH) && \
+	if [[ $$OSTYPE == "darwin"* ]]; then \
+		go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_darwin_amd64 $(BUILD_PATH); \
+	fi && \
+	gzip $(BUILD_OUTPUT_DIR)/arpfox_linux_* && \
+	zip -r $(BUILD_OUTPUT_DIR)/arpfox_windows_386.zip $(BUILD_OUTPUT_DIR)/arpfox_windows_386.exe && \
+	zip -r $(BUILD_OUTPUT_DIR)/arpfox_windows_amd64.zip $(BUILD_OUTPUT_DIR)/arpfox_windows_amd64.exe
+
+docker-builder:
+	(docker stop $(DOCKER_CONTAINER) || exit 0) && \
+	docker build -t $(DOCKER_CONTAINER) .
+
+vendor-sync:
+	govendor sync
+
+clean:
+	rm -f *.db && \
+	rm -rf $(BUILD_OUTPUT_DIR)
