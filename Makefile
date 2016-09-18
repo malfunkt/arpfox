@@ -14,8 +14,17 @@ generate:
 build: generate vendor-sync
 	go build -o arpfox github.com/xiam/arpfox
 
+
 docker-build: generate vendor-sync docker-builder clean
 	mkdir -p $(BUILD_OUTPUT_DIR) && \
+	docker run \
+		-v $$PWD:/app/src/$(BUILD_PATH) \
+		-e CGO_CFLAGS="-I/opt/libpcap-1.6.2" \
+		-e CGO_LDFLAGS="-L/opt/android-toolchain/lib" \
+		-e CC=/opt/android-toolchain/bin/arm-linux-androideabi-gcc \
+		-e LD=/opt/android-toolchain/bin/arm-linux-androideabi-ld \
+		-e CGO_ENABLED=1 -e GOOS=android -e GOARCH=arm -e GOARM=7 \
+		$(DOCKER_CONTAINER) go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_android_armv7 $(BUILD_PATH) && \
 	docker run \
 		-v $$PWD:/app/src/$(BUILD_PATH) \
 		-e CGO_CFLAGS="-I/usr/i686-w64-mingw32/sys-root/mingw/include/wpcap/" \
@@ -39,6 +48,7 @@ docker-build: generate vendor-sync docker-builder clean
 	if [[ $$OSTYPE == "darwin"* ]]; then \
 		go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/arpfox_darwin_amd64 $(BUILD_PATH); \
 	fi && \
+	gzip $(BUILD_OUTPUT_DIR)/arpfox_android_* && \
 	gzip $(BUILD_OUTPUT_DIR)/arpfox_linux_* && \
 	zip -r $(BUILD_OUTPUT_DIR)/arpfox_windows_386.zip $(BUILD_OUTPUT_DIR)/arpfox_windows_386.exe && \
 	zip -r $(BUILD_OUTPUT_DIR)/arpfox_windows_amd64.zip $(BUILD_OUTPUT_DIR)/arpfox_windows_amd64.exe
