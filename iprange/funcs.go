@@ -68,6 +68,14 @@ func Expand(c chan net.IP) []net.IP {
 	return ips
 }
 
+func ExpandAll(r Result) (out []net.IP) {
+	// TODO: Add code to normalize final array
+	for i := range r {
+		out = append(out, Expand(New(&r[i]))...)
+	}
+	return
+}
+
 func New(addressRange *Address) chan net.IP {
 	return streamRange(addressRange.Min, addressRange.Max)
 }
