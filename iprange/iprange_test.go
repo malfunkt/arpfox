@@ -173,3 +173,11 @@ func TestBadList(t *testing.T) {
 	assert.Error(t, err)
 	assert.Len(t, ipRange, 0)
 }
+
+func TestListExpansion(t *testing.T) {
+	ipRange, err := Parse("192.168.1.10, 192.168.1.1-20, 192.168.1.10/29")
+	assert.Nil(t, err)
+
+	expanded := ExpandAll(ipRange)
+	assert.Len(t, expanded, 20)
+}
