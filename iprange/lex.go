@@ -13,7 +13,7 @@ const eof = 0
 type ipLex struct {
 	line   []byte
 	peek   rune
-	output Result
+	output AddressRangeList
 	err    error
 }
 

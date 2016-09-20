@@ -62,19 +62,19 @@ func streamRange(lower, upper net.IP) chan net.IP {
 }
 
 // Expand expands an address with a mask taken from a stream
-func Expand(c chan net.IP) []net.IP {
+func (r *AddressRange) Expand() []net.IP {
 	ips := []net.IP{}
-	for ip := range c {
+	for ip := range streamRange(r.Min, r.Max) {
 		ips = append(ips, ip)
 	}
 	return ips
 }
 
-// ExpandAll expands and normalizes a set of parsed target specifications
-func ExpandAll(r Result) []net.IP {
+// Expand expands and normalizes a set of parsed target specifications
+func (l AddressRangeList) Expand() []net.IP {
 	var res []net.IP
-	for i := range r {
-		res = append(res, Expand(New(&r[i]))...)
+	for i := range l {
+		res = append(res, l[i].Expand()...)
 	}
 	return normalize(res)
 }
@@ -89,9 +89,4 @@ func normalize(src []net.IP) []net.IP {
 		}
 	}
 	return dst
-}
-
-// New creates a stream of addresses with masks from a target specification
-func New(addressRange *Address) chan net.IP {
-	return streamRange(addressRange.Min, addressRange.Max)
 }

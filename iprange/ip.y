@@ -9,9 +9,9 @@ import (
     "github.com/pkg/errors"
 )
 
-type Result []Address
+type AddressRangeList []AddressRange
 
-type Address struct {
+type AddressRange struct {
     Min net.IP
     Max net.IP
 }
@@ -26,8 +26,8 @@ type octetRange struct {
 %union {
     num         byte
     octRange    octetRange
-    addrRange   Address
-    result      Result
+    addrRange   AddressRange
+    result      AddressRangeList
 }
 
 %token  <num> NUM
@@ -61,7 +61,7 @@ target:     address '/' NUM
                     binary.BigEndian.PutUint32(maxBytes, maxInt)
                     maxBytes = maxBytes[len(maxBytes)-4:]
                     max := net.IP(maxBytes)
-                    $$ = Address {
+                    $$ = AddressRange {
                         Min: min.To4(),
                         Max: max.To4(),
                     }
@@ -73,7 +73,7 @@ target:     address '/' NUM
 
 address:    term '.' term '.' term '.' term
                 {
-                    $$ = Address {
+                    $$ = AddressRange {
                         Min: net.IPv4($1.min, $3.min, $5.min, $7.min).To4(),
                         Max: net.IPv4($1.max, $3.max, $5.max, $7.max).To4(),
                     }
@@ -87,11 +87,19 @@ octet_range:    NUM '-' NUM { $$ = octetRange { $1, $3 } }
 
 %%
 
-func Parse(in string) (Result, error) {
+func ParseList(in string) (AddressRangeList, error) {
     lex := &ipLex{line: []byte(in)}
     errCode := ipParse(lex)
     if errCode != 0 || lex.err != nil {
         return nil, errors.Wrap(lex.err, "could not parse target")
     }
     return lex.output, nil
+}
+
+func Parse(in string) (*AddressRange, error) {
+    l, err := ParseList(in)
+    if err != nil {
+        return nil, err
+    }
+    return &l[0], nil
 }
