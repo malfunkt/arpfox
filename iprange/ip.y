@@ -30,7 +30,7 @@ type octetRange struct {
     result      AddressRangeList
 }
 
-%token  <num> NUM
+%token  <num> num
 %type   <addrRange> address target
 %type   <octRange>  term octet_range
 %type   <result>    result
@@ -50,7 +50,7 @@ result: target
 
 comma: ',' | ',' ' '
 
-target:     address '/' NUM
+target:     address '/' num
                 {
                     mask := net.CIDRMask(int($3), 32)
                     min := $1.Min.Mask(mask)
@@ -79,11 +79,11 @@ address:    term '.' term '.' term '.' term
                     }
                 }
 
-term:   NUM         { $$ = octetRange { $1, $1 } }
+term:   num         { $$ = octetRange { $1, $1 } }
     |   '*'         { $$ = octetRange { 0, 255 } }
     |   octet_range { $$ = $1 }
 
-octet_range:    NUM '-' NUM { $$ = octetRange { $1, $3 } }
+octet_range:    num '-' num { $$ = octetRange { $1, $3 } }
 
 %%
 

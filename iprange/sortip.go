@@ -3,17 +3,17 @@ package iprange
 import "net"
 
 // Asc implements sorting in ascending order for IP addresses
-type Asc []net.IP
+type asc []net.IP
 
-func (a Asc) Len() int {
+func (a asc) Len() int {
 	return len(a)
 }
 
-func (a Asc) Swap(i, j int) {
+func (a asc) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
-func (a Asc) Less(i, j int) bool {
+func (a asc) Less(i, j int) bool {
 	if a[i][0] < a[j][0] {
 		return true
 	}

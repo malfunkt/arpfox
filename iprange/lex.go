@@ -58,7 +58,7 @@ L:
 		return eof
 	}
 	yylval.num = byte(octet)
-	return NUM
+	return num
 }
 
 func (ip *ipLex) next() rune {

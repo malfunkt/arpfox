@@ -80,7 +80,7 @@ func (l AddressRangeList) Expand() []net.IP {
 }
 
 func normalize(src []net.IP) []net.IP {
-	sort.Sort(Asc(src))
+	sort.Sort(asc(src))
 	dst := make([]net.IP, 1, len(src))
 	dst[0] = src[0]
 	for i := range src {
