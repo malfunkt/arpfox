@@ -105,11 +105,11 @@ func main() {
 
 	var targetAddrs []net.IP
 	if *flagTarget != "" {
-		addrRange, err := iprange.Parse(*flagTarget)
+		addrRange, err := iprange.ParseList(*flagTarget)
 		if err != nil {
 			log.Fatal("Wrong format for target.")
 		}
-		targetAddrs = iprange.Expand(iprange.New(addrRange))
+		targetAddrs = addrRange.Expand()
 		if len(targetAddrs) == 0 {
 			log.Fatalf("No valid targets given.")
 		}
@@ -181,7 +181,17 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 			case <-stop:
 				stoppedWriting <- struct{}{}
 				return
-			case <-t.C:
+			default:
+
+				/*
+				*  this is done to ensure there aren't
+				*  two channels ready to receive at the same
+				*  time, possibly ignoring the stop signal,
+				*  but ensuring the loop is executed at least
+				*  once, to guarantee proper reARPing
+				 */
+
+				<-t.C
 				for _, ip := range targetAddrs {
 					arpAddr, err := arp.Lookup(ip.String())
 					if err != nil {
