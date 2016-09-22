@@ -39,6 +39,16 @@ sudo arpfox -i wlan0 -t 10.0.0.25 10.0.0.1
 ...
 ```
 
+## Target Specification
+
+`arpfox` takes targets in the same format as `nmap`. The following are all valid target specifications:
+
+* `10.0.0.1`
+* `10.0.0.0/24`
+* `10.0.0.*`
+* `10.0.0.1-10`
+* `10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24`
+
 ## A practical example
 
 Alice is a security researcher, and she's going to redirect and watch traffic
@@ -64,7 +74,7 @@ something like:
 
 ```
 # OSX
-sudo sysctl -w net.ipv4.ip_forward=1
+sudo sysctl net.inet.ip.forwarding=1
 
 # FreeBSD
 sudo sysctl -w net.inet.ip.forwarding=1
