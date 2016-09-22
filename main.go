@@ -134,6 +134,7 @@ func main() {
 		for {
 			select {
 			case <-c:
+				log.Println("'stop' signal received; stopping...")
 				close(stop)
 				return
 			}
