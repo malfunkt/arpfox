@@ -3,6 +3,7 @@ package iprange
 import (
 	"encoding/binary"
 	"net"
+	"sort"
 )
 
 func streamRange(lower, upper net.IP) chan net.IP {
@@ -60,14 +61,32 @@ func streamRange(lower, upper net.IP) chan net.IP {
 	return ipchan
 }
 
-func Expand(c chan net.IP) []net.IP {
+// Expand expands an address with a mask taken from a stream
+func (r *AddressRange) Expand() []net.IP {
 	ips := []net.IP{}
-	for ip := range c {
+	for ip := range streamRange(r.Min, r.Max) {
 		ips = append(ips, ip)
 	}
 	return ips
 }
 
-func New(addressRange *Address) chan net.IP {
-	return streamRange(addressRange.Min, addressRange.Max)
+// Expand expands and normalizes a set of parsed target specifications
+func (l AddressRangeList) Expand() []net.IP {
+	var res []net.IP
+	for i := range l {
+		res = append(res, l[i].Expand()...)
+	}
+	return normalize(res)
+}
+
+func normalize(src []net.IP) []net.IP {
+	sort.Sort(asc(src))
+	dst := make([]net.IP, 1, len(src))
+	dst[0] = src[0]
+	for i := range src {
+		if !dst[len(dst)-1].Equal(src[i]) {
+			dst = append(dst, src[i])
+		}
+	}
+	return dst
 }

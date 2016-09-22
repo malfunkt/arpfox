@@ -23,6 +23,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"log"
@@ -105,11 +106,11 @@ func main() {
 
 	var targetAddrs []net.IP
 	if *flagTarget != "" {
-		addrRange, err := iprange.Parse(*flagTarget)
+		addrRange, err := iprange.ParseList(*flagTarget)
 		if err != nil {
 			log.Fatal("Wrong format for target.")
 		}
-		targetAddrs = iprange.Expand(iprange.New(addrRange))
+		targetAddrs = addrRange.Expand()
 		if len(targetAddrs) == 0 {
 			log.Fatalf("No valid targets given.")
 		}
@@ -133,6 +134,7 @@ func main() {
 		for {
 			select {
 			case <-c:
+				log.Println("'stop' signal received; stopping...")
 				close(stop)
 				return
 			}
@@ -142,7 +144,7 @@ func main() {
 	go readARP(handler, stop, iface)
 
 	// Get original source
-	origSrc, err := arp.Lookup(hostIP.To4().String())
+	origSrc, err := arp.Lookup(binary.BigEndian.Uint32(hostIP))
 	if err != nil {
 		log.Fatalf("Unable to lookup hw address for %s: %v", hostIP, err)
 	}
@@ -181,9 +183,19 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 			case <-stop:
 				stoppedWriting <- struct{}{}
 				return
-			case <-t.C:
+			default:
+
+				/*
+				*  this is done to ensure there aren't
+				*  two channels ready to receive at the same
+				*  time, possibly ignoring the stop signal,
+				*  but ensuring the loop is executed at least
+				*  once, to guarantee proper reARPing
+				 */
+
+				<-t.C
 				for _, ip := range targetAddrs {
-					arpAddr, err := arp.Lookup(ip.String())
+					arpAddr, err := arp.Lookup(binary.BigEndian.Uint32(ip))
 					if err != nil {
 						log.Printf("Could not retrieve %v's MAC address: %v", ip, err)
 						continue

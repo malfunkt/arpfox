@@ -1,11 +1,14 @@
 package arp
 
 import (
+	"encoding/binary"
+	"net"
 	"testing"
 )
 
 func TestArp(t *testing.T) {
-	addr, err := Lookup("10.0.0.1")
+	ip := net.IP{10, 0, 0, 1}
+	addr, err := Lookup(binary.BigEndian.Uint32(ip))
 	if err != nil {
 		t.Fatal(err)
 	}
