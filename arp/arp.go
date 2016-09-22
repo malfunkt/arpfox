@@ -55,7 +55,7 @@ type Address struct {
 // Lookup returns the Address given an IP, if the IP is not found within the
 // table, a lookup is attempted.
 func Lookup(ip uint32) (*Address, error) {
-	var b []byte
+	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, ip)
 	if hwaddr, ok := table[ip]; ok {
 		return &Address{
