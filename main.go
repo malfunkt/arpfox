@@ -23,6 +23,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"log"
@@ -142,7 +143,7 @@ func main() {
 	go readARP(handler, stop, iface)
 
 	// Get original source
-	origSrc, err := arp.Lookup(hostIP.To4().String())
+	origSrc, err := arp.Lookup(binary.BigEndian.Uint32(hostIP))
 	if err != nil {
 		log.Fatalf("Unable to lookup hw address for %s: %v", hostIP, err)
 	}
@@ -193,7 +194,7 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 
 				<-t.C
 				for _, ip := range targetAddrs {
-					arpAddr, err := arp.Lookup(ip.String())
+					arpAddr, err := arp.Lookup(binary.BigEndian.Uint32(ip))
 					if err != nil {
 						log.Printf("Could not retrieve %v's MAC address: %v", ip, err)
 						continue
