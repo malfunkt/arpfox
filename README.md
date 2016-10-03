@@ -21,7 +21,7 @@ You can install arpfox to `/usr/local/bin` with the following command (requires
 admin privileges):
 
 ```
-curl -sL 'https://raw.githubusercontent.com/malfunkt/arpfox/master/install.sh' | sudo sh
+curl -sL 'https://raw.githubusercontent.com/malfunkt/arpfox/master/install.sh' | sh
 ```
 
 You can also grab the latest release from our [releases

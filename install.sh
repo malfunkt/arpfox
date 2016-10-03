@@ -17,6 +17,13 @@ os() {
 download() {
   LATEST_RELEASE_JSON="https://api.github.com/repos/malfunkt/arpfox/releases/latest"
   DOWNLOAD_URL=$(curl --silent -L $LATEST_RELEASE_JSON | grep browser_download_url | sed s/'^.*: "'//g | sed s/'"$'//g | grep "$OS.*$ARCH")
+
+  if [ -z "$DOWNLOAD_URL" ]; then
+    curl --silent -L $LATEST_RELEASE_JSON;
+    echo "Github API is not working right now. Please try again later.";
+    exit 1
+  fi;
+
   BASENAME=$(basename $DOWNLOAD_URL)
 
   wget $DOWNLOAD_URL -O $WORK_DIR/$BASENAME
@@ -43,6 +50,7 @@ download() {
     echo "Could not install." && exit 1
   fi;
 
+  echo "This script needs root privileges in order to install into $BIN_DIR."
   sudo install -c -m 0755 $FILENAME $BIN_DIR/arpfox
   rm $FILENAME
 }
