@@ -7,7 +7,8 @@ that can be used to poison
 [ARP](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) cache tables.
 
 A security researcher can run `arpfox` against any machine on the LAN to pose
-as any other host, this is an ancient technique known as [ARP
+as any other host, this is an [ancient
+technique](http://insecure.org/sploits/arp.games.html) known as [ARP
 spoofing](https://en.wikipedia.org/wiki/ARP_spoofing) and is commonly used to
 eavesdrop communications on a LAN.
 
@@ -178,7 +179,7 @@ Connection: keep-alive
 ## Why does this happen?
 
 [ARP](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) is the
-protocol most computer use to translate a [MAC
+protocol most computers use to translate a [MAC
 address](https://en.wikipedia.org/wiki/MAC_address) into an [IP address
 ](https://en.wikipedia.org/wiki/IP_address). The original proposal is described
 in [RFC826](https://tools.ietf.org/html/rfc826).
@@ -194,12 +195,13 @@ The part that is flawed is described in the "Packet Reception" section:
 > address> pair, then the new hardware address supersedes the old
 > one.  Related Issues gives some motivation for this.
 
-The opcode they're talking about is what tells if the packet is a request or a
-reply, nothing verifies that a reply is associated with a request nor that a
-request was made in the first place.
+The opcode they're talking about is what tells the receiver if the packet is a
+request or a reply, except that nothing verifies that a reply is associated
+with a request nor that a request was made in the first place.
 
-It only takes an unsolicited ARP packet of type reply to make a device change
-it's ARP table, this includes adding new addreses and replacing old ones.
+It only takes an unsolicited ARP packet of type reply to make a machine change
+that entry into its internal ARP table, this includes adding new addreses and
+replacing old ones.
 
 ## How can I protect against this?
 
@@ -225,3 +227,10 @@ ssh -D 9999 user@myownserver.org
 
 A more advanced example could be found
 [here](https://www.digitalocean.com/community/tutorials/how-to-route-web-traffic-securely-without-a-vpn-using-a-socks-tunnel).
+
+## A glimpse of our future
+
+You know what is probably not going to help solving this problem in the coming
+years? Millions of already deployed IoT devices that cannot update themselves.
+
+![c4jt321](https://cloud.githubusercontent.com/assets/385670/19027614/6320583e-88f7-11e6-95c4-3bf785b6082c.png)
