@@ -15,7 +15,7 @@ eavesdrop communications on a LAN.
 The machine that receives traffic can record, censor, alter or selectively drop
 network packets that pass through it.
 
-## Download arpfox
+## Get `arpfox`
 
 You can install arpfox to `/usr/local/bin` with the following command (requires
 admin privileges):
@@ -28,7 +28,7 @@ You can also grab the latest release from our [releases
 page](https://github.com/malfunkt/arpfox/releases) and install it manually into
 another location.
 
-## Building
+## Build it yourself
 
 In order to build `arpfox` you'll need Go, a C compiler and libpcap's
 development files:
