@@ -94,5 +94,5 @@ ENV GOROOT /usr/local/go
 ENV GOPATH /app
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
-RUN mkdir -p /app/src/github.com/xiam/arpfox
-WORKDIR /app/src/github.com/xiam/arpfox
+RUN mkdir -p /app/src/github.com/malfunkt/arpfox
+WORKDIR /app/src/github.com/malfunkt/arpfox

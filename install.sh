@@ -15,7 +15,7 @@ os() {
 }
 
 download() {
-  LATEST_RELEASE_JSON="https://api.github.com/repos/xiam/arpfox/releases/latest"
+  LATEST_RELEASE_JSON="https://api.github.com/repos/malfunkt/arpfox/releases/latest"
   DOWNLOAD_URL=$(curl --silent -L $LATEST_RELEASE_JSON | grep browser_download_url | sed s/'^.*: "'//g | sed s/'"$'//g | grep "$OS.*$ARCH")
   BASENAME=$(basename $DOWNLOAD_URL)
 

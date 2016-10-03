@@ -14,22 +14,75 @@ eavesdrop communications on a LAN.
 The machine that receives traffic can record, censor, alter or selectively drop
 network packets that pass through it.
 
+## Download arpfox
+
+You can install arpfox to `/usr/local/bin` with the following command (requires
+admin privileges):
+
+```
+curl -sL 'https://raw.githubusercontent.com/malfunkt/arpfox/master/install.sh' | sudo sh
+```
+
+You can also grab the latest release from our [releases
+page](https://github.com/malfunkt/arpfox/releases) and install it manually into
+another location.
+
 ## Building
 
-Requisites:
+In order to build `arpfox` you'll need Go, a C compiler and libpcap's
+development files:
 
 ```
+# Fedora
 sudo dnf install -y libpcap-devel
+
+# Debian/Ubuntu
+sudo apt-get install -y libpcap-dev
+
+# OSX
+brew install libpcap
+
+# FreeBSD
+sudo pkg install libpcap
 ```
 
+After installing libpcap, use `go get` to build and install `arpfox`:
+
 ```
-go get github.com/xiam/arpfox
+go get github.com/malfunkt/arpfox
 arpfox -h
 ```
 
-## Running
+## Running `arpfox`
 
-Depending on your OS, you may require root privileges to run this command:
+```
+arpfox -i [interface] -t [target] [host]
+```
+
+### Interface (-i)
+
+Interface name, could be `eth0`, `en0`, `wlan0`, etc.
+
+### Target specification (-t)
+
+`arpfox` takes targets in the same format as `nmap`. The following are all
+valid target specifications:
+
+* `10.0.0.1`
+* `10.0.0.0/24`
+* `10.0.0.*`
+* `10.0.0.1-10`
+* `10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24`
+
+### Host
+
+The host parameter defines the host you want to pose as, for instance, if you
+use the LAN router's IP address, the target will start sending packets to you
+intead of to the legitimate router.
+
+### Root privileges
+
+Depending on your OS, you may require root privileges to run `arpfox`
 
 ```
 arpfox -i wlan0 -t 10.0.0.25 10.0.0.1
@@ -39,38 +92,27 @@ sudo arpfox -i wlan0 -t 10.0.0.25 10.0.0.1
 ...
 ```
 
-## Target Specification
-
-`arpfox` takes targets in the same format as `nmap`. The following are all valid target specifications:
-
-* `10.0.0.1`
-* `10.0.0.0/24`
-* `10.0.0.*`
-* `10.0.0.1-10`
-* `10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24`
-
 ## A practical example
 
-Alice is a security researcher, and she's going to redirect and watch traffic
-coming from her own phone on her machine in order in order to test if the phone
-and if a local network are susceptible to ARP spoofing.
+Alice is a security researcher, and she wants to intercept and record all
+traffic between her own phone and the LAN router.
 
-Alice's machine is already on the same LAN as the phone, and she knows the IP
+Her machine is already on the same LAN as the phone, and she knows the IP
 addresses of both the phone and of the router.
 
 ```
+Phone:  10.0.0.101
 Router: 10.0.0.1
-Phone: 10.0.0.101
 ```
 
-Alice will attempt to make her machine pose as the router in order for the
-phone to send all traffic to it.
+Alice will attempt to make her laptop pose as the router in order for the phone
+to send all its traffic to the laptop.
 
 If she succeeds, the phone will start sending traffic marked for `10.0.0.1` to
 Alice's machine, which will just ignore the packets because these packets have
-a different destination. In order to instruct the machine to forward the
-packets to the legitimate destination instrad of dropping them, Alice does
-something like:
+a different destination, in order to instruct the laptop to forward the packets
+to the legitimate destination instrad of dropping them, Alice does something
+like:
 
 ```
 # OSX
@@ -83,33 +125,34 @@ sudo sysctl -w net.inet.ip.forwarding=1
 sudo sysctl -w net.ipv4.ip_forward=1
 ```
 
-And besides forwarding, Alice also wants to see what's going on with
-unencrypted traffic, so she instructs `tcpdump` to display packets coming from
-the phone:
+Besides forwarding, Alice also wants to see what's going on with unencrypted
+traffic, so she instructs `tcpdump` to display packets coming from the phone:
 
 ```
 tcpdump -i en0 -A -n "src host 10.0.0.101 and (dst port 80 or dst port 443)"
 ```
 
-At this point, the phone's ARP table looks like this:
+At this point Alice hasn't started `arpfox` yet and the phone's ARP table still
+looks like this:
 
 ```
 # 10.0.0.1's legitimate MAC address on the phone.
 ? (10.0.0.1) at 11:22:33:44:55:66 on wlan0 expires in 857 seconds [ethernet]
 ```
 
-and she's prepared to use `arpfox`:
+Now she's ready to use `arpfox`:
 
 ```
 # arpfox -i [network interface] -t [target] [host]
 arpfox -i en0 -t 10.0.0.101 10.0.0.1
 ```
 
-`-t 10.0.0.101 10.0.0.1` tells `arpfox` to send unsolicited ARP replies to the
-phone (`10.0.0.101`) posing as the router (`10.0.0.1`).
+`-i en0` tells `arpfox` to use the `en0` network interface and `-t 10.0.0.101
+10.0.0.1` tells `arpfox` to send unsolicited ARP replies to the phone
+(`10.0.0.101`) posing as the router (`10.0.0.1`).
 
-After a few seconds, the phone's ARP table gets altered and the phone now
-thinks Alice's machine is the router:
+After a few seconds, the phone's ARP table will get altered and the phone will
+think Alice's machine is the router:
 
 ```
 # 10.0.0.1's MAC address was changed on the phone.

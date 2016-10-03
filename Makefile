@@ -1,16 +1,16 @@
 SHELL               ?= /bin/bash
-BUILD_PATH          ?= github.com/xiam/arpfox
+BUILD_PATH          ?= github.com/malfunkt/arpfox
 BUILD_OUTPUT_DIR    ?= bin
 DOCKER_IMAGE        ?= arpfox-builder
 BUILD_FLAGS         ?= -v
 BIN_PREFIX          ?= arpfox
 
-GH_OWNER            ?= xiam
+GH_OWNER            ?= malfunkt
 GH_REPO             ?= arpfox
 GH_ACCESS_TOKEN     ?=
 
 build: generate vendor-sync
-	go build -o arpfox github.com/xiam/arpfox
+	go build -o arpfox github.com/malfunkt/arpfox
 
 all: docker-build
 

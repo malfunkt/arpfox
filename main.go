@@ -1,4 +1,4 @@
-// Copyright (c) 2016 José Nieto, https://menteslibres.net/xiam
+// Copyright (c) 2016 José Nieto, https://menteslibres.net/malfunkt
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -35,9 +35,9 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"github.com/xiam/arpfox/arp"
+	"github.com/malfunkt/arpfox/arp"
 
-	"github.com/xiam/arpfox/iprange"
+	"github.com/malfunkt/arpfox/iprange"
 )
 
 var (
