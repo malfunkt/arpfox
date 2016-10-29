@@ -15,7 +15,7 @@ build: generate vendor-sync
 all: docker-build
 
 generate:
-	cd iprange && go generate
+	go generate github.com/malfunkt/iprange
 
 docker-build: generate vendor-sync docker-builder clean
 	mkdir -p $(BUILD_OUTPUT_DIR) && \
