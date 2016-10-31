@@ -9,15 +9,12 @@ GH_OWNER            ?= malfunkt
 GH_REPO             ?= arpfox
 GH_ACCESS_TOKEN     ?=
 
-build: generate vendor-sync
+build: vendor-sync
 	go build -o arpfox github.com/malfunkt/arpfox
 
 all: docker-build
 
-generate:
-	go generate github.com/malfunkt/iprange
-
-docker-build: generate vendor-sync docker-builder clean
+docker-build: vendor-sync docker-builder clean
 	mkdir -p $(BUILD_OUTPUT_DIR) && \
 	docker run \
 		-v $$PWD:/app/src/$(BUILD_PATH) \
