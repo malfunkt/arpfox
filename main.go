@@ -37,7 +37,7 @@ import (
 	"github.com/google/gopacket/pcap"
 	"github.com/malfunkt/arpfox/arp"
 
-	"github.com/malfunkt/arpfox/iprange"
+	"github.com/malfunkt/iprange"
 )
 
 var (
