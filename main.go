@@ -51,14 +51,14 @@ func main() {
 	flag.Parse()
 
 	if *flagHelp {
-		fmt.Println("arpspoof sends specially crafted ARP packets to a given target on a LAN in")
+		fmt.Println("arpfox sends specially crafted ARP packets to a given target on a LAN in")
 		fmt.Println("order to alter the target's ARP cache table and make the target send network")
 		fmt.Println("packets to the user's machine instead of to the legitimate host.")
 		fmt.Println("")
 		fmt.Println("Kernel IP forwarding must be turned on ahead of time.")
 		fmt.Println("")
 		fmt.Println("Usage: ")
-		fmt.Println("arpspoof [-i interface] -t target host")
+		fmt.Println("arpfox [-i interface] -t target host")
 		fmt.Println("")
 		flag.PrintDefaults()
 		os.Exit(0)
