@@ -61,7 +61,7 @@ docker-builder:
 	docker build -t $(DOCKER_IMAGE) .
 
 vendor-sync:
-	govendor sync
+	dep ensure
 
 clean:
 	rm -f *.db && \

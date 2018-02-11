@@ -1,5 +1,7 @@
 # arpfox
 
+[![Build Status](https://travis-ci.org/malfunkt/arpfox.svg?branch=master)](https://travis-ci.org/malfunkt/arpfox)
+
 `arpfox` is an [arpspoof](http://linux.die.net/man/8/arpspoof) clone written in
 Go which creates and injects special [ARP
 packets](https://en.wikipedia.org/wiki/Address_Resolution_Protocol#Packet_structure)
