@@ -51,9 +51,8 @@ func main() {
 	flag.Parse()
 
 	if *flagHelp {
-		fmt.Println("arpfox sends specially crafted ARP packets to a given target on a LAN in")
-		fmt.Println("order to alter the target's ARP cache table and make the target send network")
-		fmt.Println("packets to the user's machine instead of to the legitimate host.")
+		fmt.Println("arpfox sends specially crafted ARP packets to a given host on a LAN in order")
+		fmt.Println("to poison its ARP cache table.")
 		fmt.Println("")
 		fmt.Println("Kernel IP forwarding must be turned on ahead of time.")
 		fmt.Println("")
@@ -184,15 +183,6 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 				stoppedWriting <- struct{}{}
 				return
 			default:
-
-				/*
-				*  this is done to ensure there aren't
-				*  two channels ready to receive at the same
-				*  time, possibly ignoring the stop signal,
-				*  but ensuring the loop is executed at least
-				*  once, to guarantee proper reARPing
-				 */
-
 				<-t.C
 				for _, ip := range targetAddrs {
 					arpAddr, err := arp.Lookup(binary.BigEndian.Uint32(ip))
