@@ -4,6 +4,7 @@ package arp
 import (
 	"encoding/binary"
 	"net"
+	"runtime"
 	"sync"
 
 	"github.com/google/gopacket"
@@ -63,7 +64,10 @@ func Lookup(ip uint32) (*Address, error) {
 			HardwareAddr: hwaddr,
 		}, nil
 	}
-	return doARPLookup(net.IP(b).To4().String())
+	if runtime.GOOS != "windows" {
+		return doARPLookup(net.IP(b).To4().String())
+	}
+	return dowinARPLookup(net.IP(b).To4().String())
 }
 
 // NewARPRequest creates a bew ARP packet of type "request.

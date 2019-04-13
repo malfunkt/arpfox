@@ -30,12 +30,15 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"github.com/malfunkt/arpfox/arp"
+
+	//"github.com/malfunkt/arpfox/arp"
+	"./arp"
 
 	"github.com/malfunkt/iprange"
 )
@@ -67,15 +70,26 @@ func main() {
 		*flagWaitInterval = 0.1
 	}
 
+	//->
+	//*flagTarget = "192.168.3.100"
+
 	if *flagTarget == "" {
 		log.Fatal("Missing target (-t 192.168.1.7).")
 	}
 
 	iface, err := net.InterfaceByName(*flagInterface)
+	//iface, err := net.InterfaceByName("以太网")
+	//fmt.Println(iface)
 	if err != nil {
 		log.Fatalf("Could not use interface %s: %v", *flagInterface, err)
 	}
 
+	if runtime.GOOS == "windows" {
+		iface.Name = arp.GetRealCardName(*flagTarget)
+		if err := arp.BindArpByMyself(*flagTarget); err != nil {
+			log.Fatal(err)
+		}
+	}
 	handler, err := pcap.OpenLive(iface.Name, 65535, true, pcap.BlockForever)
 	if err != nil {
 		log.Fatal(err)
