@@ -49,7 +49,7 @@ brew install libpcap
 sudo pkg install libpcap
 
 # Windows
-You need install (Winpacp)["https://www.winpcap.org/"]
+You need install Winpacp
 ```
 
 After installing libpcap, use `go get` to build and install `arpfox`:
