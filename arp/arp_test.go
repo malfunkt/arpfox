@@ -2,6 +2,7 @@ package arp
 
 import (
 	"encoding/binary"
+	"fmt"
 	"net"
 	"testing"
 )
@@ -13,4 +14,12 @@ func TestArp(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("addr: %v", addr)
+}
+
+func TestWinArp(t *testing.T) {
+	addr, err := dowinARPLookup("192.168.3.102")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(addr)
 }
