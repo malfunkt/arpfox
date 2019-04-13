@@ -36,8 +36,9 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-
-	"github.com/malfunkt/arpfox/arp"
+	
+	"./arp"
+	//"github.com/malfunkt/arpfox/arp"
 
 	"github.com/malfunkt/iprange"
 )
