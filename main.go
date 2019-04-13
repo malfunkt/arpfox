@@ -30,21 +30,31 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"github.com/malfunkt/arpfox/arp"
 
+	"github.com/malfunkt/arpfox/arp"
 	"github.com/malfunkt/iprange"
 )
 
+func defaultInterface() string {
+	switch runtime.GOOS {
+	case "windows":
+		return "Ethernet"
+	}
+	return "eth0"
+}
+
 var (
-	flagInterface    = flag.String("i", "eth0", `Network interface.`)
-	flagTarget       = flag.String("t", "", `Target host(s). Provide a single IP: "1.2.3.4", a CIDR block "1.2.3.0/24", an IP range: "1.2.3-7.4-12", an IP with a wildcard: "1.2.3.*", or a list with any combination: "1.2.3.4, 1.2.3.0/24, ..."`)
-	flagWaitInterval = flag.Float64("w", 5.0, `Wait <w> seconds between every broadcast, <w> must be a value greater than 0.1.`)
-	flagHelp         = flag.Bool("h", false, `Print usage instructions and exit.`)
+	flagInterface      = flag.String("i", defaultInterface(), `Network interface.`)
+	flagTarget         = flag.String("t", "", `Target host(s). Provide a single IP: "1.2.3.4", a CIDR block "1.2.3.0/24", an IP range: "1.2.3-7.4-12", an IP with a wildcard: "1.2.3.*", or a list with any combination: "1.2.3.4, 1.2.3.0/24, ..."`)
+	flagListInterfaces = flag.Bool("l", false, `List available interfaces and exit.`)
+	flagWaitInterval   = flag.Float64("w", 5.0, `Wait <w> seconds between every broadcast, <w> must be a value greater than 0.1.`)
+	flagHelp           = flag.Bool("h", false, `Print usage instructions and exit.`)
 )
 
 func main() {
@@ -63,6 +73,20 @@ func main() {
 		os.Exit(0)
 	}
 
+	if *flagListInterfaces {
+		ifaces, err := net.Interfaces()
+		if err != nil {
+			log.Fatal("Failed to retrieve interfaces: ", err)
+		}
+		for _, iface := range ifaces {
+			if iface.HardwareAddr == nil {
+				continue
+			}
+			fmt.Printf("%s \"%s\"\n", iface.HardwareAddr, iface.Name)
+		}
+		os.Exit(0)
+	}
+
 	if *flagWaitInterval < 0.1 {
 		*flagWaitInterval = 0.1
 	}
@@ -74,6 +98,13 @@ func main() {
 	iface, err := net.InterfaceByName(*flagInterface)
 	if err != nil {
 		log.Fatalf("Could not use interface %s: %v", *flagInterface, err)
+	}
+
+	if runtime.GOOS == "windows" {
+		iface.Name, err = getRealCardName(iface)
+		if err != nil {
+			log.Fatal("could not translate card name: ", err)
+		}
 	}
 
 	handler, err := pcap.OpenLive(iface.Name, 65535, true, pcap.BlockForever)
@@ -212,6 +243,7 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 func readARP(handle *pcap.Handle, stop chan struct{}, iface *net.Interface) {
 	src := gopacket.NewPacketSource(handle, layers.LayerTypeEthernet)
 	in := src.Packets()
+
 	for {
 		var packet gopacket.Packet
 		select {
@@ -232,4 +264,34 @@ func readARP(handle *pcap.Handle, stop chan struct{}, iface *net.Interface) {
 			log.Printf("ARP packet (%d): %v (%v) -> %v (%v)", packet.Operation, net.IP(packet.SourceProtAddress), net.HardwareAddr(packet.SourceHwAddress), net.IP(packet.DstProtAddress), net.HardwareAddr(packet.DstHwAddress))
 		}
 	}
+}
+
+// getRealCardName returns the underlying network card name.
+// Actual Windows network card names look like:
+// "\Device\NPF_{8D51979B-6048-4472-BBA9-379CF7C7A339}"
+func getRealCardName(iface *net.Interface) (string, error) {
+	devices, err := pcap.FindAllDevs()
+	if err != nil {
+		return "", err
+	}
+
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, data := range devices {
+		for i := range addrs {
+			for j := range data.Addresses {
+				if data.Addresses[j].IP.To4() == nil {
+					continue
+				}
+				if addrs[i].(*net.IPNet).Contains(data.Addresses[j].IP) {
+					return data.Name, nil
+				}
+			}
+		}
+	}
+
+	return "", fmt.Errorf("could not find a network card that matches the interface")
 }
