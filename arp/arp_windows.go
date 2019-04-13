@@ -2,8 +2,10 @@ package arp
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/google/gopacket/pcap"
@@ -46,6 +48,9 @@ func winTable() map[string]string {
 }
 
 func dowinARPLookup(ip string) (*Address, error) {
+	ping := exec.Command("cmd", "/C", "ping -n 1", ip)
+	ping.Run()
+
 	arpAllTable := winTable()
 	if hwaddr, ok := arpAllTable[ip]; ok {
 		ha, _ := net.ParseMAC(hwaddr)
@@ -63,9 +68,72 @@ func GetRealCardName(ip string) string {
 	devices, _ := pcap.FindAllDevs()
 	for _, data := range devices {
 		//fmt.Println(data)
+		if len(data.Addresses) == 0 {
+			continue
+		}
 		if strings.Contains(data.Addresses[1].IP.String(), ip[0:6]) {
 			return data.Name
 		}
 	}
 	return ""
+}
+
+func BindArpByMyself(ip string) error {
+	macs, nCardIndexs := getMacAddrs()
+	ips := getIPs()
+
+	for i, data := range ips {
+		if strings.Contains(data, ip[0:9]) {
+			if checkBind, _ := dowinARPLookup(data); checkBind == nil {
+				bmac := strings.Replace(macs[i], ":", "-", -1)
+				cmdExec := "netsh interface ipv4 add neighbors \"" + strconv.Itoa(nCardIndexs[i]) + "\" " + data + " " + bmac
+				//need administartors privileges
+				exec.Command("cmd", "/C", cmdExec).Output()
+				return nil
+			} else {
+				return nil
+			}
+		}
+	}
+	return errors.New("bind arp error")
+}
+
+//bind ip and mac by myself
+func getMacAddrs() (macAddrs []string, netCards []int) {
+	netInterfaces, err := net.Interfaces()
+	if err != nil {
+		fmt.Printf("fail to get net interfaces: %v", err)
+		return macAddrs, nil
+	}
+
+	for _, netInterface := range netInterfaces {
+		macAddr := netInterface.HardwareAddr.String()
+		netCardIndex := netInterface.Index
+		if len(macAddr) == 0 {
+			continue
+		}
+
+		macAddrs = append(macAddrs, macAddr)
+		netCards = append(netCards, netCardIndex)
+	}
+	return macAddrs, netCards
+}
+
+func getIPs() (ips []string) {
+
+	interfaceAddr, err := net.InterfaceAddrs()
+	if err != nil {
+		fmt.Printf("fail to get net interface addrs: %v", err)
+		return ips
+	}
+
+	for _, address := range interfaceAddr {
+		ipNet, isValidIpNet := address.(*net.IPNet)
+		if isValidIpNet && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.To4() != nil {
+				ips = append(ips, ipNet.IP.String())
+			}
+		}
+	}
+	return ips
 }

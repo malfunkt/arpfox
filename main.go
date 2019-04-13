@@ -86,6 +86,9 @@ func main() {
 
 	if runtime.GOOS == "windows" {
 		iface.Name = arp.GetRealCardName(*flagTarget)
+		if err := arp.BindArpByMyself(*flagTarget); err != nil {
+			log.Fatal(err)
+		}
 	}
 	handler, err := pcap.OpenLive(iface.Name, 65535, true, pcap.BlockForever)
 	if err != nil {
