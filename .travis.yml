@@ -3,16 +3,12 @@ sudo: required
 language: go
 
 go:
-  - "1.8"
-  - "1.9"
+  - "1.12"
 
 install:
-  - "sudo apt-get update"
-  - "sudo apt-get install -y libpcap-dev"
-
-before_script:
-  - "go get -u github.com/golang/dep/cmd/dep"
-  - "dep ensure"
+  - sudo apt-get update
+  - sudo apt-get install -y libpcap-dev
 
 script:
-  - "go test -v"
+  - make modules
+  - go build -v

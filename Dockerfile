@@ -1,4 +1,4 @@
-FROM fedora:27
+FROM fedora:30
 
 RUN dnf install -y \
   # Commong tools
@@ -39,14 +39,13 @@ RUN dnf install -y dnf-plugins-core && \
 
 RUN mkdir -p \
   /opt \
-  /app \
-  /app/src/github.com/malfunkt/arpfox
+  /go/src/github.com/malfunkt/arpfox
 
-ENV ANDROID_NDK_URL=https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
+ENV ANDROID_NDK_URL=https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
 
-ENV LIBPCAP_URL=https://www.tcpdump.org/release/libpcap-1.8.1.tar.gz
+ENV LIBPCAP_URL=https://www.tcpdump.org/release/libpcap-1.9.0.tar.gz
 
-ENV GO_TARBALL=https://dl.google.com/go/go1.11.linux-amd64.tar.gz
+ENV GO_TARBALL=https://dl.google.com/go/go1.12.8.linux-amd64.tar.gz
 
 # Android toolchain
 RUN wget --quiet -O /opt/android-ndk.zip $ANDROID_NDK_URL
@@ -81,7 +80,11 @@ RUN cd /opt/libpcap-* && \
 RUN curl --silent -L $GO_TARBALL | tar -xzf - -C /usr/local
 
 ENV GOROOT /usr/local/go
-ENV GOPATH /app
+ENV GOPATH /go
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
+ENV GO111MODULE=on
 
-WORKDIR /app/src/github.com/malfunkt/arpfox
+WORKDIR /go/src/github.com/malfunkt/arpfox
+COPY . .
+
+RUN go mod vendor
