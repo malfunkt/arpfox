@@ -3,9 +3,9 @@
 [![Build Status](https://travis-ci.org/malfunkt/arpfox.svg?branch=master)](https://travis-ci.org/malfunkt/arpfox)
 
 `arpfox` is an [arpspoof](http://linux.die.net/man/8/arpspoof) alternative
-written in Go that injects special [ARP
+written in Go that injects specially crafted [ARP
 packets](https://en.wikipedia.org/wiki/Address_Resolution_Protocol#Packet_structure)
-on a LAN.
+into a LAN.
 
 A security researcher may run `arpfox` against any machine on the LAN (even the
 router) to alter its ARP cache table and divert network packets to another
