@@ -43,8 +43,12 @@ import (
 
 func defaultInterface() string {
 	switch runtime.GOOS {
+	case "freebsd", "linux":
+		return "wlan0"
 	case "windows":
 		return "Ethernet"
+	case "darwin":
+		return "en0"
 	}
 	return "eth0"
 }
@@ -101,9 +105,9 @@ func main() {
 	}
 
 	if runtime.GOOS == "windows" {
-		iface.Name, err = getRealCardName(iface)
+		iface.Name, err = getActualDeviceName(iface)
 		if err != nil {
-			log.Fatal("could not translate card name: ", err)
+			log.Fatal("could not translate device name: ", err)
 		}
 	}
 
@@ -266,10 +270,10 @@ func readARP(handle *pcap.Handle, stop chan struct{}, iface *net.Interface) {
 	}
 }
 
-// getRealCardName returns the underlying network card name.
+// getActualDeviceName returns the underlying network card name.
 // Actual Windows network card names look like:
 // "\Device\NPF_{8D51979B-6048-4472-BBA9-379CF7C7A339}"
-func getRealCardName(iface *net.Interface) (string, error) {
+func getActualDeviceName(iface *net.Interface) (string, error) {
 	devices, err := pcap.FindAllDevs()
 	if err != nil {
 		return "", err

@@ -2,20 +2,16 @@
 
 [![Build Status](https://travis-ci.org/malfunkt/arpfox.svg?branch=master)](https://travis-ci.org/malfunkt/arpfox)
 
-`arpfox` is an [arpspoof](http://linux.die.net/man/8/arpspoof) clone written in
-Go which creates and injects special [ARP
+`arpfox` is an [arpspoof](http://linux.die.net/man/8/arpspoof) alternative
+written in Go that injects special [ARP
 packets](https://en.wikipedia.org/wiki/Address_Resolution_Protocol#Packet_structure)
-that can be used to poison
-[ARP](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) cache tables.
+on a LAN.
 
-A security researcher can run `arpfox` against any machine on the LAN to pose
-as any other host, this is an [ancient
+A security researcher may run `arpfox` against any machine on the LAN (even the
+router) to alter its ARP cache table and divert network packets to another
+host, this is an [ancient
 technique](http://insecure.org/sploits/arp.games.html) known as [ARP
-spoofing](https://en.wikipedia.org/wiki/ARP_spoofing) and is commonly used to
-eavesdrop communications on a LAN.
-
-The machine that receives traffic can record, censor, alter or selectively drop
-network packets that pass through it.
+spoofing](https://en.wikipedia.org/wiki/ARP_spoofing).
 
 ## Get `arpfox`
 
@@ -27,13 +23,13 @@ curl -sL 'https://raw.githubusercontent.com/malfunkt/arpfox/master/install.sh' |
 ```
 
 You can also grab the latest release from our [releases
-page](https://github.com/malfunkt/arpfox/releases) and install it manually into
-another location.
+page](https://github.com/malfunkt/arpfox/releases) and install it on a
+different location.
 
 ## Build it yourself
 
-In order to build `arpfox` you'll need Go, a C compiler and libpcap's
-development files:
+In order to build `arpfox` from source you'll need Go, a C compiler and
+libpcap's development files:
 
 ```
 # Fedora
@@ -47,6 +43,9 @@ brew install libpcap
 
 # FreeBSD
 sudo pkg install libpcap
+
+# Windows
+# Install https://www.winpcap.org/
 ```
 
 After installing libpcap, use `go get` to build and install `arpfox`:
@@ -64,11 +63,11 @@ arpfox -i [interface] -t [target] [host]
 
 ### Interface (-i)
 
-Interface name, could be `eth0`, `en0`, `wlan0`, etc.
+Interface name (e.g.: `eth0`, `en0`, `wlan0`, etc).
 
 ### Target specification (-t)
 
-`arpfox` takes targets in the same format as `nmap`. The following are all
+`arpfox` takes targets in the same format as `nmap` does. The following are all
 valid target specifications:
 
 * `10.0.0.1`
@@ -80,8 +79,8 @@ valid target specifications:
 ### Host
 
 The host parameter defines the host you want to pose as, for instance, if you
-use the LAN router's IP address, the target will start sending packets to you
-intead of to the legitimate router.
+use the LAN router's IP address, the targeted machine will stop sending network
+packets to the router and will send them to you instead.
 
 ### Root privileges
 
@@ -111,11 +110,11 @@ Router: 10.0.0.1
 Alice will attempt to make her laptop pose as the router in order for the phone
 to send all its traffic to the laptop.
 
-If she succeeds, the phone will start sending traffic marked for `10.0.0.1` to
-Alice's machine, which will just ignore the packets because these packets have
-a different destination, in order to instruct the laptop to forward the packets
-to the legitimate destination instrad of dropping them, Alice does something
-like:
+If she succeeds, the phone will start sending traffic marked for the router
+(`10.0.0.1`) to Alice's machine, which (by default) will ignore the packets
+because they have a different destination, in order to instruct her machine to
+forward the packets to the legitimate destination instrad of dropping them
+Alice does something like:
 
 ```
 # OSX
@@ -126,10 +125,15 @@ sudo sysctl -w net.inet.ip.forwarding=1
 
 # Linux
 sudo sysctl -w net.ipv4.ip_forward=1
+
+# Windows (on PowerShell)
+Get-NetIPInterface | select ifIndex,InterfaceAlias,AddressFamily,ConnectionState,Forwarding | Sort-Object -Property IfIndex | Format-Table
+# (get the interface index)
+Set-NetIPInterface -ifindex [interface index] -Forwarding Enabled
 ```
 
-Besides forwarding, Alice also wants to see what's going on with unencrypted
-traffic, so she instructs `tcpdump` to display packets coming from the phone:
+Besides just forwarding packets between the target and the router, Alice also
+wants to eavesdrop the traffic between the target and the router:
 
 ```
 tcpdump -i en0 -A -n "src host 10.0.0.101 and (dst port 80 or dst port 443)"
@@ -150,9 +154,9 @@ Now she's ready to use `arpfox`:
 arpfox -i en0 -t 10.0.0.101 10.0.0.1
 ```
 
-`-i en0` tells `arpfox` to use the `en0` network interface and `-t 10.0.0.101
-10.0.0.1` tells `arpfox` to send unsolicited ARP replies to the phone
-(`10.0.0.101`) posing as the router (`10.0.0.1`).
+`-i en0` tells `arpfox` to inject packets via the `en0` network interface, `-t
+10.0.0.101 10.0.0.1` tells `arpfox` to send unsolicited ARP replies to the
+phone (`10.0.0.101`) posing as the router (`10.0.0.1`).
 
 After a few seconds, the phone's ARP table will get altered and the phone will
 think Alice's machine is the router:
@@ -210,7 +214,7 @@ replacing old ones.
 There are [some programs](https://en.wikipedia.org/wiki/ARP_spoofing#Defense)
 that can help you against ARP spoofing. Sometimes programs like these may be
 inconvenient because we usually roam over different networks all the time and
-these programs require usto hack stuff before actually starting being
+these programs require us to hack stuff before actually starting being
 productive. Keeping an static ARP table is simply not practical enough for most
 users.
 
