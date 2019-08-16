@@ -10,4 +10,5 @@ install:
   - sudo apt-get install -y libpcap-dev
 
 script:
+  - export GO111MODULE=on
   - make build
