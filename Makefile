@@ -9,6 +9,10 @@ GH_OWNER            ?= malfunkt
 GH_REPO             ?= arpfox
 GH_ACCESS_TOKEN     ?=
 
+GO111MODULE         ?= on
+
+export GO111MODULE
+
 define docker-run
 	docker run --rm \
 		-v $$PWD/$(BUILD_OUTPUT_DIR):/go/src/$(BUILD_PATH)/$(BUILD_OUTPUT_DIR) \
@@ -17,10 +21,10 @@ define docker-run
 		go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_$(2) $(BUILD_PATH)
 endef
 
+all: build-all
+
 build: modules
 	go build $(BUILD_FLAGS) -o arpfox github.com/malfunkt/arpfox
-
-all: docker-build
 
 build-all: modules docker-builder clean
 	mkdir -p $(BUILD_OUTPUT_DIR) && \
@@ -89,7 +93,7 @@ docker-builder:
 	docker build -t $(DOCKER_IMAGE) .
 
 modules:
-	GO111MODULE=on go mod vendor
+	go mod vendor
 
 clean:
 	rm -f *.db && \

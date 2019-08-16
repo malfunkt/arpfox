@@ -45,7 +45,7 @@ ENV ANDROID_NDK_URL=https://dl.google.com/android/repository/android-ndk-r20-lin
 
 ENV LIBPCAP_URL=https://www.tcpdump.org/release/libpcap-1.9.0.tar.gz
 
-ENV GO_TARBALL=https://dl.google.com/go/go1.12.8.linux-amd64.tar.gz
+ENV GO_TARBALL=https://dl.google.com/go/go1.12.9.linux-amd64.tar.gz
 
 # Android toolchain
 RUN wget --quiet -O /opt/android-ndk.zip $ANDROID_NDK_URL
