@@ -35,6 +35,9 @@ libpcap's development files:
 # Fedora
 sudo dnf install -y libpcap-devel
 
+# Arch Linux
+sudo yay -S arpfox
+
 # Debian/Ubuntu
 sudo apt-get install -y libpcap-dev
 
