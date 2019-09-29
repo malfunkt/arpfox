@@ -78,16 +78,16 @@ docker-build-linux-386:
 		-e CGO_ENABLED=1 -e GOOS=linux -e GOARCH=386,linux_386)
 
 build-osx:
-	if [[ $$OSTYPE == "darwin"* ]]; then \
+ifneq (,$(findstring 'darwin', ${OSTYPE}))
 		GOARCH=amd64 go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_darwin_amd64 $(BUILD_PATH) && \
-		gzip $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_darwin_*; \
-	fi
+		gzip $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_darwin_*;
+endif
 
 build-freebsd:
-	if [[ $$OSTYPE == "freebsd"* ]]; then \
-		GOARCH=amd64 go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_freebsd_amd64 $(BUILD_PATH) && \
-		gzip $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_freebsd_*; \
-	fi
+ifneq (,$(findstring 'freebsd', ${OSTYPE}))
+	GOARCH=amd64 go build $(BUILD_FLAGS) -o $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_freebsd_amd64 $(BUILD_PATH) && \
+	gzip $(BUILD_OUTPUT_DIR)/$(BIN_PREFIX)_freebsd_*;
+endif
 
 docker-builder:
 	docker build -t $(DOCKER_IMAGE) .
@@ -100,10 +100,14 @@ clean:
 	rm -rf $(BUILD_OUTPUT_DIR)/*
 
 require-version:
-	@if [[ -z "$$VERSION" ]]; then echo "Missing \$$VERSION"; exit 1; fi
+ifeq (,${VERSION})
+	$(error Missing $$VERSION)
+endif
 
 require-access-token:
-	@if [[ -z "$(GH_ACCESS_TOKEN)" ]]; then echo "Missing \$$GH_ACCESS_TOKEN"; exit 1; fi
+ifeq (,${GH_ACCESS_TOKEN})
+	$(error Missing $$GH_ACCESS_TOKEN)
+endif
 
 release: require-version require-access-token build-all
 	RESP=$$(curl --silent --data '{ \
