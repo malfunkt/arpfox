@@ -8,20 +8,20 @@ import (
 	"net"
 	"os/exec"
 	"regexp"
-	"strconv"
 )
 
 var lineMatch = regexp.MustCompile(`([0-9\.]+)\s+dev\s+([^\s]+)\s+lladdr\s+([0-9a-f:]+)`)
 
-func hexToInt(h string) uint8 {
-	v, _ := strconv.ParseInt(h, 16, 16)
-	return uint8(v)
-}
-
 func doARPLookup(ip string) (*Address, error) {
+
 	ping := exec.Command("ping", "-c1", "-t1", ip)
-	ping.Run() // TODO: manually inject arp who has packet.
-	ping.Wait()
+	if err := ping.Run(); err != nil { // TODO: manually inject arp who has packet.
+		return nil, err
+	}
+
+	if err := ping.Wait(); err != nil {
+		return nil, err
+	}
 
 	cmd := exec.Command("ip", "n", "show", ip)
 	out, err := cmd.Output()

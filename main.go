@@ -1,4 +1,4 @@
-// Copyright (c) 2016 José Nieto, https://menteslibres.net/malfunkt
+// Copyright (c) 2016-present José Nieto, https://xiam.io
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -165,13 +165,9 @@ func main() {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
 	go func() {
-		for {
-			select {
-			case <-c:
-				log.Println("'stop' signal received; stopping...")
-				close(stop)
-				return
-			}
+		for range c {
+			log.Println("'stop' signal received; stopping...")
+			close(stop)
 		}
 	}()
 

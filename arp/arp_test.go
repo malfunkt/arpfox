@@ -2,7 +2,6 @@ package arp
 
 import (
 	"encoding/binary"
-	"fmt"
 	"net"
 	"testing"
 )
