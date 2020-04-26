@@ -2,7 +2,6 @@
 package arp
 
 import (
-	"encoding/binary"
 	"net"
 	"sync"
 
@@ -11,7 +10,7 @@ import (
 )
 
 var (
-	table   map[uint32]net.HardwareAddr
+	table   = make(map[string]net.HardwareAddr)
 	tableMu sync.RWMutex
 )
 
@@ -20,26 +19,32 @@ var defaultSerializeOpts = gopacket.SerializeOptions{
 	ComputeChecksums: true,
 }
 
-func init() {
-	table = make(map[uint32]net.HardwareAddr)
+// Add adds a IP-MAC map to a runtime ARP table.
+func internalLookup(ip net.IP) (*net.HardwareAddr, bool) {
+	tableMu.Lock()
+	defer tableMu.Unlock()
+	if hwaddr, ok := table[ip.To4().String()]; ok {
+		return &hwaddr, true
+	}
+	return nil, false
 }
 
 // Add adds a IP-MAC map to a runtime ARP table.
 func Add(ip net.IP, hwaddr net.HardwareAddr) {
 	tableMu.Lock()
 	defer tableMu.Unlock()
-	table[binary.BigEndian.Uint32(ip)] = hwaddr
+	table[ip.To4().String()] = hwaddr
 }
 
 // Delete removes an IP from the runtime ARP table.
 func Delete(ip net.IP) {
 	tableMu.Lock()
 	defer tableMu.Unlock()
-	delete(table, binary.BigEndian.Uint32(ip))
+	delete(table, ip.To4().String())
 }
 
 // List returns the current runtime ARP table.
-func List() map[uint32]net.HardwareAddr {
+func List() map[string]net.HardwareAddr {
 	tableMu.RLock()
 	defer tableMu.RUnlock()
 	return table
@@ -54,16 +59,19 @@ type Address struct {
 
 // Lookup returns the Address given an IP, if the IP is not found within the
 // table, a lookup is attempted.
-func Lookup(ip uint32) (*Address, error) {
-	b := make([]byte, 4)
-	binary.BigEndian.PutUint32(b, ip)
-	if hwaddr, ok := table[ip]; ok {
+func Lookup(ip net.IP) (*Address, error) {
+	if hwaddr, ok := internalLookup(ip); ok {
 		return &Address{
-			IP:           net.IP(b),
-			HardwareAddr: hwaddr,
+			IP:           ip,
+			HardwareAddr: *hwaddr,
 		}, nil
 	}
-	return doARPLookup(net.IP(b).To4().String())
+
+	addr, err := doARPLookup(ip.To4().String())
+	if err == nil {
+		Add(addr.IP, addr.HardwareAddr)
+	}
+	return addr, err
 }
 
 // NewARPRequest creates a bew ARP packet of type "request.

@@ -20,8 +20,13 @@ func hexToInt(h string) uint8 {
 
 func doARPLookup(ip string) (*Address, error) {
 	ping := exec.Command("ping", "-c1", "-t1", ip)
-	ping.Run() // TODO: manually inject arp who has packet.
-	ping.Wait()
+	if err := ping.Start(); err != nil {
+		return nil, err
+	}
+
+	if err := ping.Wait(); err != nil {
+		return nil, err
+	}
 
 	cmd := exec.Command("arp", "-n", ip)
 	out, err := cmd.Output()

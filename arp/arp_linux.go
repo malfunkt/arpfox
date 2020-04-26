@@ -15,7 +15,7 @@ var lineMatch = regexp.MustCompile(`([0-9\.]+)\s+dev\s+([^\s]+)\s+lladdr\s+([0-9
 func doARPLookup(ip string) (*Address, error) {
 
 	ping := exec.Command("ping", "-c1", "-t1", ip)
-	if err := ping.Run(); err != nil { // TODO: manually inject arp who has packet.
+	if err := ping.Start(); err != nil {
 		return nil, err
 	}
 
@@ -50,6 +50,7 @@ func doARPLookup(ip string) (*Address, error) {
 			HardwareAddr: macAddr,
 			Interface:    *iface,
 		}
+
 		return &localAddr, nil
 	}
 	return nil, errors.New("Lookup failed.")

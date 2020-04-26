@@ -47,7 +47,13 @@ func winTable() map[string]string {
 
 func doARPLookup(ip string) (*Address, error) {
 	ping := exec.Command("cmd", "/C", "ping -n 1", ip)
-	ping.Run()
+	if err := ping.Start(); err != nil {
+		return nil, err
+	}
+
+	if err := ping.Wait(); err != nil {
+		return nil, err
+	}
 
 	arpAllTable := winTable()
 	if hwaddr, ok := arpAllTable[ip]; ok {

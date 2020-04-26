@@ -23,7 +23,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/binary"
 	"flag"
 	"fmt"
 	"log"
@@ -57,7 +56,7 @@ var (
 	flagInterface      = flag.String("i", defaultInterface(), `Network interface.`)
 	flagTarget         = flag.String("t", "", `Target host(s). Provide a single IP: "1.2.3.4", a CIDR block "1.2.3.0/24", an IP range: "1.2.3-7.4-12", an IP with a wildcard: "1.2.3.*", or a list with any combination: "1.2.3.4, 1.2.3.0/24, ..."`)
 	flagListInterfaces = flag.Bool("l", false, `List available interfaces and exit.`)
-	flagWaitInterval   = flag.Float64("w", 5.0, `Wait <w> seconds between every broadcast, <w> must be a value greater than 0.1.`)
+	flagWaitInterval   = flag.Float64("w", 2, `Wait <w> seconds between every broadcast, <w> must be a value greater than 0.1.`)
 	flagHelp           = flag.Bool("h", false, `Print usage instructions and exit.`)
 )
 
@@ -174,7 +173,7 @@ func main() {
 	go readARP(handler, stop, iface)
 
 	// Get original source
-	origSrc, err := arp.Lookup(binary.BigEndian.Uint32(hostIP))
+	origSrc, err := arp.Lookup(hostIP)
 	if err != nil {
 		log.Fatalf("Unable to lookup hw address for %s: %v", hostIP, err)
 	}
@@ -206,6 +205,7 @@ func cleanUpAndReARP(handler *pcap.Handle, targetAddrs []net.IP, src *arp.Addres
 
 func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, src *arp.Address, waitInterval time.Duration) chan struct{} {
 	stoppedWriting := make(chan struct{})
+
 	go func(stoppedWriting chan struct{}) {
 		t := time.NewTicker(waitInterval)
 		for {
@@ -216,7 +216,7 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 			default:
 				<-t.C
 				for _, ip := range targetAddrs {
-					arpAddr, err := arp.Lookup(binary.BigEndian.Uint32(ip))
+					arpAddr, err := arp.Lookup(ip)
 					if err != nil {
 						log.Printf("Could not retrieve %v's MAC address: %v", ip, err)
 						continue
@@ -225,6 +225,7 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 						IP:           ip,
 						HardwareAddr: arpAddr.HardwareAddr,
 					}
+
 					buf, err := arp.NewARPRequest(src, dst)
 					if err != nil {
 						log.Print("NewARPRequest: ", err)
@@ -237,6 +238,7 @@ func writeARP(handler *pcap.Handle, stop chan struct{}, targetAddrs []net.IP, sr
 			}
 		}
 	}(stoppedWriting)
+
 	return stoppedWriting
 }
 
