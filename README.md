@@ -51,10 +51,10 @@ sudo pkg install libpcap
 # Install https://www.winpcap.org/
 ```
 
-After installing libpcap, use `go get` to build and install `arpfox`:
+After installing libpcap, use `go install` to build and install `arpfox`:
 
 ```
-go get github.com/malfunkt/arpfox
+go install github.com/malfunkt/arpfox
 arpfox -h
 ```
 

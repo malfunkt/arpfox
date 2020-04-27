@@ -51,7 +51,7 @@ download() {
   fi;
 
   echo "Installing to $BIN_DIR... (it might require sudo password)"
-  sudo install -c -m 0755 $FILENAME $BIN_DIR/arpfox
+  sudo install -v -c -m 0755 $FILENAME $BIN_DIR/arpfox || echo "This script needs root privileges in order to install into $BIN_DIR."
   rm $FILENAME
 }
 
