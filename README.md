@@ -13,7 +13,7 @@ host, this is an [ancient
 technique](http://insecure.org/sploits/arp.games.html) known as [ARP
 spoofing](https://en.wikipedia.org/wiki/ARP_spoofing).
 
-## Get `arpfox`
+## Installing `arpfox`
 
 You can install arpfox to `/usr/local/bin` with the following command (requires
 admin privileges):
@@ -26,7 +26,7 @@ You can also grab the latest release from our [releases
 page](https://github.com/malfunkt/arpfox/releases) and install it on a
 different location.
 
-## Build it yourself
+### Building `arpfox` from source
 
 In order to build `arpfox` from source you'll need Go, a C compiler and
 libpcap's development files:

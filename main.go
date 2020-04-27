@@ -40,6 +40,8 @@ import (
 	"github.com/malfunkt/iprange"
 )
 
+const version = "1.0.0"
+
 func defaultInterface() string {
 	switch runtime.GOOS {
 	case "freebsd", "linux":
@@ -58,10 +60,16 @@ var (
 	flagListInterfaces = flag.Bool("l", false, `List available interfaces and exit.`)
 	flagWaitInterval   = flag.Float64("w", 2, `Wait <w> seconds between every broadcast, <w> must be a value greater than 0.1.`)
 	flagHelp           = flag.Bool("h", false, `Print usage instructions and exit.`)
+	flagVersion        = flag.Bool("v", false, `Print software version and exit.`)
 )
 
 func main() {
 	flag.Parse()
+
+	if *flagVersion {
+		fmt.Printf("%v\n", version)
+		os.Exit(0)
+	}
 
 	if *flagHelp {
 		fmt.Println("arpfox sends specially crafted ARP packets to a given host on a LAN in order")
