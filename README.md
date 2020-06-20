@@ -68,6 +68,26 @@ arpfox -i [interface] -t [target] [host]
 
 Interface name (e.g.: `eth0`, `en0`, `wlan0`, etc).
 
+### List interfaces (-l)
+
+To provide the interface name input for `-i` flag, you need to know the
+interfaces present in your computer. `arpfox` can help you list the interfaces
+present in your computer along with their MAC addresses
+
+```
+arpfox -l
+19:66:99:00:ee:44 "en0"
+12:64:ff:ef:9c:78 "en1"
+25:35:7f:ef:09:69 "en2"
+81:26:0c:ef:49:9a "bridge0"
+0a:89:90:e0:9e:4b "p2p0"
+52:ce:e5:d4:d0:b1 "awdl0"
+33:aa:dd:00:dd:bb "llw0"
+```
+
+To get more information about your interfaces, you will have to use some OS
+specific commands like `ifconfig` in MacOS
+
 ### Target specification (-t)
 
 `arpfox` takes targets in the same format as `nmap` does. The following are all
